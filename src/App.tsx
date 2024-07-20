@@ -5,6 +5,7 @@ interface Job {
   company: string;
   location: string;
   description: string;
+  link: string;
 }
 
 const App: React.FC = () => {
@@ -95,6 +96,9 @@ const App: React.FC = () => {
                 {job.company} - {job.location}
               </p>
               <p>{job.description}</p>
+              <a href={job.link} target="_blank" rel="noopener noreferrer">
+                View Job
+              </a>
             </li>
           ))}
         </ul>
