@@ -2,9 +2,6 @@ import React, { useState } from "react";
 
 interface Job {
   title: string;
-  company: string;
-  location: string;
-  description: string;
   link: string;
 }
 
@@ -59,10 +56,6 @@ const App: React.FC = () => {
           {jobs.map((job, index) => (
             <li key={index}>
               <h2>{job.title}</h2>
-              <p>
-                {job.company} - {job.location}
-              </p>
-              <p>{job.description}</p>
               <a href={job.link} target="_blank" rel="noopener noreferrer">
                 View Job
               </a>
