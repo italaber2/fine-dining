@@ -7,16 +7,27 @@ interface Job {
   description: string;
 }
 
-//Test
-
 const App: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchJobs = async () => {
+  const fetchSpotifyJobs = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/jobs");
+      const response = await fetch("/api/jobs/spotify");
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTogglJobs = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/jobs/toggl");
       const data = await response.json();
       setJobs(data);
     } catch (error) {
@@ -29,7 +40,8 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <h1>Job Listings</h1>
-      <button onClick={fetchJobs}>Spotify</button>
+      <button onClick={fetchSpotifyJobs}>Spotify</button>
+      <button onClick={fetchTogglJobs}>Toggl</button>
       {loading ? (
         <p>Loading...</p>
       ) : jobs.length ? (
