@@ -37,11 +37,25 @@ const App: React.FC = () => {
     }
   };
 
+  const fetchKodifyJobs = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/jobs/kodify");
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <h1>Job Listings</h1>
       <button onClick={fetchSpotifyJobs}>Spotify</button>
       <button onClick={fetchTogglJobs}>Toggl</button>
+      <button onClick={fetchKodifyJobs}>Kodify</button>
       {loading ? (
         <p>Loading...</p>
       ) : jobs.length ? (
