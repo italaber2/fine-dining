@@ -38,59 +38,79 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <h1>Job Listings</h1>
-      {[
-        { label: "Spotify", endpoint: "/api/jobs/spotify" },
-        { label: "Toggl", endpoint: "/api/jobs/toggl" },
-        { label: "Kodify", endpoint: "/api/jobs/kodify" },
-        { label: "Indeed PT QA", endpoint: "/api/jobs/indeed/pt-qa" },
-        { label: "Indeed ES QA", endpoint: "/api/jobs/indeed/es-qa" },
-        { label: "Indeed ES Tester", endpoint: "/api/jobs/indeed/es-tester" },
-        { label: "Indeed DK QA", endpoint: "/api/jobs/indeed/dk-qa" },
-        { label: "Indeed DE QA", endpoint: "/api/jobs/indeed/de-qa" },
-        { label: "Indeed NL QA", endpoint: "/api/jobs/indeed/nl-qa" },
-        { label: "Indeed LU QA", endpoint: "/api/jobs/indeed/lu-qa" },
-        { label: "Indeed NO QA", endpoint: "/api/jobs/indeed/no-qa" },
-        { label: "Indeed FR QA", endpoint: "/api/jobs/indeed/fr-qa" },
-        { label: "Indeed FI TAE", endpoint: "/api/jobs/indeed/fi-tae" },
-        { label: "Indeed SE QA", endpoint: "/api/jobs/indeed/se-qa" },
-        { label: "Indeed IT Tester", endpoint: "/api/jobs/indeed/it-tester" },
-        { label: "Indeed AT Tester", endpoint: "/api/jobs/indeed/at-tester" },
-        { label: "Indeed BE QA", endpoint: "/api/jobs/indeed/be-qa" },
-        { label: "Indeed BE Tester", endpoint: "/api/jobs/indeed/be-tester" },
-      ].map((job, index) => (
-        <button
-          key={index}
-          onClick={() => fetchJobs(job.endpoint, job.label)}
-          style={{
-            backgroundColor: activeButton === job.label ? "lightblue" : "",
-          }}
-        >
-          {job.label}
-        </button>
-      ))}
-      {loading ? (
-        <p>Loading...</p>
-      ) : jobs.length ? (
-        <ul>
-          {jobs.map((job, index) => (
-            <li key={index}>
-              <h2>{job.title}</h2>
-              <a
-                href={job.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => handleLinkClick(index)}
-                style={{ color: job.clicked ? "red" : "blue" }} // Change color based on clicked state
-              >
-                View Job
-              </a>
-            </li>
+      <div className="header">
+        <h1>Job Listings</h1>
+      </div>
+      <div className="container">
+        <div className="sidebar">
+          {[
+            { label: "Spotify", endpoint: "/api/jobs/spotify" },
+            { label: "Toggl", endpoint: "/api/jobs/toggl" },
+            { label: "Kodify", endpoint: "/api/jobs/kodify" },
+            { label: "Indeed PT QA", endpoint: "/api/jobs/indeed/pt-qa" },
+            { label: "Indeed ES QA", endpoint: "/api/jobs/indeed/es-qa" },
+            {
+              label: "Indeed ES Tester",
+              endpoint: "/api/jobs/indeed/es-tester",
+            },
+            { label: "Indeed DK QA", endpoint: "/api/jobs/indeed/dk-qa" },
+            { label: "Indeed DE QA", endpoint: "/api/jobs/indeed/de-qa" },
+            { label: "Indeed NL QA", endpoint: "/api/jobs/indeed/nl-qa" },
+            { label: "Indeed LU QA", endpoint: "/api/jobs/indeed/lu-qa" },
+            { label: "Indeed NO QA", endpoint: "/api/jobs/indeed/no-qa" },
+            { label: "Indeed FR QA", endpoint: "/api/jobs/indeed/fr-qa" },
+            { label: "Indeed FI TAE", endpoint: "/api/jobs/indeed/fi-tae" },
+            { label: "Indeed SE QA", endpoint: "/api/jobs/indeed/se-qa" },
+            {
+              label: "Indeed IT Tester",
+              endpoint: "/api/jobs/indeed/it-tester",
+            },
+            {
+              label: "Indeed AT Tester",
+              endpoint: "/api/jobs/indeed/at-tester",
+            },
+            { label: "Indeed BE QA", endpoint: "/api/jobs/indeed/be-qa" },
+            {
+              label: "Indeed BE Tester",
+              endpoint: "/api/jobs/indeed/be-tester",
+            },
+          ].map((job, index) => (
+            <button
+              key={index}
+              onClick={() => fetchJobs(job.endpoint, job.label)}
+              style={{
+                backgroundColor: activeButton === job.label ? "lightblue" : "",
+              }}
+            >
+              {job.label}
+            </button>
           ))}
-        </ul>
-      ) : (
-        <p>No jobs found</p>
-      )}
+        </div>
+        <div className="content">
+          {loading ? (
+            <p>Loading...</p>
+          ) : jobs.length ? (
+            <ul>
+              {jobs.map((job, index) => (
+                <li key={index}>
+                  <h2>{job.title}</h2>
+                  <a
+                    href={job.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handleLinkClick(index)}
+                    style={{ color: job.clicked ? "red" : "blue" }} // Change color based on clicked state
+                  >
+                    View Job
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No jobs found</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
