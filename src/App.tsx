@@ -15,7 +15,9 @@ const App: React.FC = () => {
     setLoading(true);
     setActiveButton(buttonId);
     try {
-      const response = await fetch(endpoint);
+      const response = await fetch(
+        `https://welcome-moth-kind.ngrok-free.app${endpoint}`
+      );
       const data = await response.json();
       // Update the jobs to include the clicked property
       const updatedJobs = data.map((job: Job) => ({
