@@ -16,15 +16,27 @@ const App: React.FC = () => {
     setActiveButton(buttonId);
     try {
       const response = await fetch(
-        `https://welcome-moth-kind.ngrok-free.app${endpoint}`
+        `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
       );
-      const data = await response.json();
-      // Update the jobs to include the clicked property
-      const updatedJobs = data.map((job: Job) => ({
-        ...job,
-        clicked: false,
-      }));
-      setJobs(updatedJobs);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await response.json();
+        const updatedJobs = data.map((job: Job) => ({
+          ...job,
+          clicked: false,
+        }));
+        setJobs(updatedJobs);
+      } else {
+        throw new Error("Response not JSON");
+      }
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
