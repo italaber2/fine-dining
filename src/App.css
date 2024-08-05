@@ -1,5 +1,8 @@
 .App {
   text-align: center;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
@@ -7,28 +10,33 @@
   background-color: #282c34;
   color: white;
   padding: 1em;
+  box-sizing: border-box;
 }
 
 .container {
   display: flex;
+  flex-direction: row;
   height: calc(100vh - 60px);
-  /* Adjust height to subtract the header */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sidebar {
-  width: 30%;
-  /* Adjust width as needed */
+  flex: 1;
+  max-width: 300px;
   background-color: #f4f4f4;
   padding: 1em;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .content {
-  width: 70%;
-  /* Adjust width as needed */
+  flex: 2;
   padding: 1em;
   overflow-y: auto;
   background-color: #ffffff;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 button {
@@ -38,4 +46,33 @@ button {
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
+}
+
+ul.job-results {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul.job-results li {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+ul.job-results li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .App {
+    width: 95%;
+  }
+
+  .sidebar {
+    flex: 1 1 40%;
+  }
+
+  .content {
+    flex: 1 1 60%;
+  }
 }

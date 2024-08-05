@@ -2,6 +2,8 @@ import React, { useState } from "react";
 
 interface Job {
   title: string;
+  company: string;
+  location: string;
   link: string;
   clicked: boolean;
 }
@@ -104,16 +106,19 @@ const App: React.FC = () => {
           {loading ? (
             <p>Loading...</p>
           ) : jobs.length ? (
-            <ul>
+            <ul className="job-results">
               {jobs.map((job, index) => (
                 <li key={index}>
                   <h2>{job.title}</h2>
+                  <p>
+                    {job.company} - {job.location}
+                  </p>
                   <a
                     href={job.link}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => handleLinkClick(index)}
-                    style={{ color: job.clicked ? "red" : "blue" }} // Change color based on clicked state
+                    style={{ color: job.clicked ? "red" : "blue" }}
                   >
                     View Job
                   </a>
