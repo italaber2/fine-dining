@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import logo from "./fineDiningButler.png";
+import "./App.css";
 
 interface Job {
   title: string;
@@ -55,7 +57,7 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <div className="header">
-        <h1>Job Listings</h1>
+        <img src={logo} alt="Logo" className="logo" /> <h1>Job Listings</h1>
       </div>
       <div className="container">
         <div className="sidebar">
@@ -63,6 +65,7 @@ const App: React.FC = () => {
             { label: "Spotify", endpoint: "/api/jobs/spotify" },
             { label: "Toggl", endpoint: "/api/jobs/toggl" },
             { label: "Kodify", endpoint: "/api/jobs/kodify" },
+            { label: "Indeed CZ QA", endpoint: "/api/jobs/indeed/cz-qa" },
             { label: "Indeed PT QA", endpoint: "/api/jobs/indeed/pt-qa" },
             { label: "Indeed ES QA", endpoint: "/api/jobs/indeed/es-qa" },
             {
