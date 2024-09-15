@@ -13,36 +13,57 @@ interface Job {
 const App: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [activeButton, setActiveButton] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchJobs = async (endpoint: string, buttonId: string) => {
+  const fetchAllJobs = async () => {
     setLoading(true);
-    setActiveButton(buttonId);
+    setError(null);
     try {
-      const response = await fetch(
-        `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
-        {
-          headers: {
-            "ngrok-skip-browser-warning": "69420",
-          },
+      const endpoints = [
+        "/api/jobs/spotify",
+        "/api/jobs/toggl",
+        "/api/jobs/kodify",
+        "/api/jobs/indeed/cz-qa",
+        "/api/jobs/indeed/pt-qa",
+        "/api/jobs/indeed/es-qa",
+        "/api/jobs/indeed/dk-qa",
+        "/api/jobs/indeed/de-qa",
+        "/api/jobs/indeed/nl-qa",
+        "/api/jobs/indeed/lu-qa",
+        "/api/jobs/indeed/no-qa",
+        "/api/jobs/indeed/fr-qa",
+        "/api/jobs/indeed/fi-tae",
+        "/api/jobs/indeed/se-qa",
+        "/api/jobs/indeed/it-tester",
+        "/api/jobs/indeed/at-tester",
+        "/api/jobs/indeed/be-qa",
+      ];
+
+      const allJobs: Job[] = [];
+      for (const endpoint of endpoints) {
+        const response = await fetch(
+          `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "69420",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch jobs from ${endpoint}`);
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
         const data = await response.json();
-        const updatedJobs = data.map((job: Job) => ({
+        const formattedJobs = data.map((job: Job) => ({
           ...job,
           clicked: false,
         }));
-        setJobs(updatedJobs);
-      } else {
-        throw new Error("Response not JSON");
+        allJobs.push(...formattedJobs);
       }
-    } catch (error) {
-      console.error("Error fetching jobs:", error);
+
+      setJobs(allJobs);
+    } catch (err: any) {
+      console.error("Error fetching jobs:", err);
+      setError("An error occurred while fetching jobs.");
     } finally {
       setLoading(false);
     }
@@ -57,49 +78,20 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <div className="header">
-        <img src={logo} alt="Logo" className="logo" /> <h1>Job Listings</h1>
+        <img src={logo} alt="Logo" className="logo" />
+        <h1>Job Listings</h1>
       </div>
       <div className="container">
         <div className="sidebar">
-          {[
-            { label: "Spotify", endpoint: "/api/jobs/spotify" },
-            { label: "Toggl", endpoint: "/api/jobs/toggl" },
-            { label: "Kodify", endpoint: "/api/jobs/kodify" },
-            { label: "Indeed CZ QA", endpoint: "/api/jobs/indeed/cz-qa" },
-            { label: "Indeed PT QA", endpoint: "/api/jobs/indeed/pt-qa" },
-            { label: "Indeed ES QA", endpoint: "/api/jobs/indeed/es-qa" },
-            { label: "Indeed DK QA", endpoint: "/api/jobs/indeed/dk-qa" },
-            { label: "Indeed DE QA", endpoint: "/api/jobs/indeed/de-qa" },
-            { label: "Indeed NL QA", endpoint: "/api/jobs/indeed/nl-qa" },
-            { label: "Indeed LU QA", endpoint: "/api/jobs/indeed/lu-qa" },
-            { label: "Indeed NO QA", endpoint: "/api/jobs/indeed/no-qa" },
-            { label: "Indeed FR QA", endpoint: "/api/jobs/indeed/fr-qa" },
-            { label: "Indeed FI TAE", endpoint: "/api/jobs/indeed/fi-tae" },
-            { label: "Indeed SE QA", endpoint: "/api/jobs/indeed/se-qa" },
-            {
-              label: "Indeed IT Tester",
-              endpoint: "/api/jobs/indeed/it-tester",
-            },
-            {
-              label: "Indeed AT Tester",
-              endpoint: "/api/jobs/indeed/at-tester",
-            },
-            { label: "Indeed BE QA", endpoint: "/api/jobs/indeed/be-qa" },
-          ].map((job, index) => (
-            <button
-              key={index}
-              onClick={() => fetchJobs(job.endpoint, job.label)}
-              style={{
-                backgroundColor: activeButton === job.label ? "lightblue" : "",
-              }}
-            >
-              {job.label}
-            </button>
-          ))}
+          <button onClick={fetchAllJobs} disabled={loading}>
+            {loading ? "Fetching Jobs..." : "Fetch Jobs from All Markets"}
+          </button>
         </div>
         <div className="content">
           {loading ? (
-            <p>Loading...</p>
+            <p>Loading jobs from all markets...</p>
+          ) : error ? (
+            <p style={{ color: "red" }}>{error}</p>
           ) : jobs.length ? (
             <ul className="job-results">
               {jobs.map((job, index) => (
