@@ -68,10 +68,6 @@ const App: React.FC = () => {
             { label: "Indeed CZ QA", endpoint: "/api/jobs/indeed/cz-qa" },
             { label: "Indeed PT QA", endpoint: "/api/jobs/indeed/pt-qa" },
             { label: "Indeed ES QA", endpoint: "/api/jobs/indeed/es-qa" },
-            {
-              label: "Indeed ES Tester",
-              endpoint: "/api/jobs/indeed/es-tester",
-            },
             { label: "Indeed DK QA", endpoint: "/api/jobs/indeed/dk-qa" },
             { label: "Indeed DE QA", endpoint: "/api/jobs/indeed/de-qa" },
             { label: "Indeed NL QA", endpoint: "/api/jobs/indeed/nl-qa" },
@@ -89,10 +85,6 @@ const App: React.FC = () => {
               endpoint: "/api/jobs/indeed/at-tester",
             },
             { label: "Indeed BE QA", endpoint: "/api/jobs/indeed/be-qa" },
-            {
-              label: "Indeed BE Tester",
-              endpoint: "/api/jobs/indeed/be-tester",
-            },
           ].map((job, index) => (
             <button
               key={index}
