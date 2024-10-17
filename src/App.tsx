@@ -20,9 +20,9 @@ const App: React.FC = () => {
     setError(null);
     try {
       const endpoints = [
-        "/api/jobs/spotify",
-        "/api/jobs/toggl",
-        "/api/jobs/kodify",
+        // "/api/jobs/spotify",
+        // "/api/jobs/toggl",
+        // "/api/jobs/kodify",
         "/api/jobs/indeed/cz-qa",
         "/api/jobs/indeed/pt-qa",
         "/api/jobs/indeed/es-qa",
@@ -41,26 +41,45 @@ const App: React.FC = () => {
 
       const allJobs: Job[] = [];
       for (const endpoint of endpoints) {
-        const response = await fetch(
-          `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "69420",
-            },
+        try {
+          console.log(`Fetching jobs from ${endpoint}`);
+          const response = await fetch(
+            `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
+            {
+              headers: {
+                "ngrok-skip-browser-warning": "69420",
+              },
+            }
+          );
+          console.log(`Response status from ${endpoint}:`, response.status);
+
+          if (!response.ok) {
+            console.error(
+              `Failed to fetch jobs from ${endpoint}: ${response.statusText}`
+            );
+            continue; // Skip to the next endpoint
           }
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to fetch jobs from ${endpoint}`);
+
+          const data = await response.json();
+          console.log(`Response data from ${endpoint}:`, data);
+
+          if (Array.isArray(data) && data.length > 0) {
+            const formattedJobs = data.map((job: Job) => ({
+              ...job,
+              clicked: false,
+            }));
+            allJobs.push(...formattedJobs);
+          } else {
+            console.log(`No jobs found from ${endpoint}`);
+          }
+        } catch (err: any) {
+          console.error(`Error fetching jobs from ${endpoint}:`, err);
+          // Continue to the next endpoint
         }
-        const data = await response.json();
-        const formattedJobs = data.map((job: Job) => ({
-          ...job,
-          clicked: false,
-        }));
-        allJobs.push(...formattedJobs);
       }
 
       setJobs(allJobs);
+      console.log("All jobs fetched:", allJobs);
     } catch (err: any) {
       console.error("Error fetching jobs:", err);
       setError("An error occurred while fetching jobs.");
@@ -84,12 +103,12 @@ const App: React.FC = () => {
       <div className="container">
         <div className="sidebar">
           <button onClick={fetchAllJobs} disabled={loading}>
-            {loading ? "Fetching Jobs..." : "Fetch Jobs from All Markets"}
+            {loading ? "Fetching Jobs..." : "Fetch Jobs from Indeed"}
           </button>
         </div>
         <div className="content">
           {loading ? (
-            <p>Loading jobs from all markets...</p>
+            <p>Loading jobs from all Indeed markets...</p>
           ) : error ? (
             <p style={{ color: "red" }}>{error}</p>
           ) : jobs.length ? (
