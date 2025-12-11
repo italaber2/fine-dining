@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "./fineDiningButler.png";
 import "./App.css";
 
@@ -10,88 +10,83 @@ interface Job {
   clicked: boolean;
 }
 
+const BASE_URL = "https://welcome-moth-kind.ngrok-free.app";
+
 const App: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAllJobs = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const endpoints = [
-        // "/api/jobs/spotify",
-        // "/api/jobs/toggl",
-        // "/api/jobs/kodify",
-        "/api/jobs/indeed/cz-qa",
-        "/api/jobs/indeed/pt-qa",
-        "/api/jobs/indeed/es-qa",
-        "/api/jobs/indeed/dk-qa",
-        "/api/jobs/indeed/de-qa",
-        "/api/jobs/indeed/nl-qa",
-        "/api/jobs/indeed/lu-qa",
-        "/api/jobs/indeed/no-qa",
-        "/api/jobs/indeed/fr-qa",
-        "/api/jobs/indeed/fi-tae",
-        "/api/jobs/indeed/se-qa",
-        "/api/jobs/indeed/it-tester",
-        "/api/jobs/indeed/at-tester",
-        "/api/jobs/indeed/be-qa",
-      ];
+  const [groups, setGroups] = useState<Record<string, string[]>>({});
 
-      const allJobs: Job[] = [];
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`Fetching jobs from ${endpoint}`);
-          const response = await fetch(
-            `https://welcome-moth-kind.ngrok-free.app${endpoint}`,
-            {
-              headers: {
-                "ngrok-skip-browser-warning": "69420",
-              },
-            }
-          );
-          console.log(`Response status from ${endpoint}:`, response.status);
+  // Load backend config and auto-group endpoints by inferred source
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/config`);
+        if (!res.ok) return;
 
-          if (!response.ok) {
-            console.error(
-              `Failed to fetch jobs from ${endpoint}: ${response.statusText}`
-            );
-            continue; // Skip to the next endpoint
-          }
+        const data = await res.json();
 
-          const data = await response.json();
-          console.log(`Response data from ${endpoint}:`, data);
+        // Example path: "/api/jobs/indeed/de-qa"
+        // segments = ["", "api", "jobs", "indeed", "de-qa"]
+        const grouped = data.reduce((acc: any, item: any) => {
+          const segments = item.path.split("/");
+          const source = segments[3]; // "indeed", "apify", "startupJobs", etc.
 
-          if (Array.isArray(data) && data.length > 0) {
-            const formattedJobs = data.map((job: Job) => ({
-              ...job,
-              clicked: false,
-            }));
-            allJobs.push(...formattedJobs);
-          } else {
-            console.log(`No jobs found from ${endpoint}`);
-          }
-        } catch (err: any) {
-          console.error(`Error fetching jobs from ${endpoint}:`, err);
-          // Continue to the next endpoint
-        }
+          if (!acc[source]) acc[source] = [];
+          acc[source].push(item.path);
+
+          return acc;
+        }, {});
+
+        setGroups(grouped);
+      } catch (err) {
+        console.error("Failed to load config:", err);
       }
+    };
 
-      setJobs(allJobs);
-      console.log("All jobs fetched:", allJobs);
-    } catch (err: any) {
-      console.error("Error fetching jobs:", err);
-      setError("An error occurred while fetching jobs.");
-    } finally {
-      setLoading(false);
+    loadConfig();
+  }, []);
+
+  // Fetch jobs for a specific source (load only that group's endpoints)
+  const fetchJobsBySource = async (source: string) => {
+    const endpoints = groups[source];
+    if (!endpoints) return;
+
+    setLoading(source);
+    setError(null);
+
+    const collected: Job[] = [];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(`${BASE_URL}${endpoint}`, {
+          headers: { "ngrok-skip-browser-warning": "69420" },
+        });
+
+        if (!res.ok) continue;
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          collected.push(
+            ...data.map((j: Job) => ({ ...j, clicked: false }))
+          );
+        }
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+      }
     }
+
+    setJobs(collected);
+    setLoading(null);
   };
 
-  const handleLinkClick = (index: number) => {
-    const updatedJobs = [...jobs];
-    updatedJobs[index].clicked = true;
-    setJobs(updatedJobs);
+  const handleLinkClick = (i: number) => {
+    const updated = [...jobs];
+    updated[i].clicked = true;
+    setJobs(updated);
   };
 
   return (
@@ -100,30 +95,36 @@ const App: React.FC = () => {
         <img src={logo} alt="Logo" className="logo" />
         <h1>Job Listings</h1>
       </div>
+
       <div className="container">
         <div className="sidebar">
-          <button onClick={fetchAllJobs} disabled={loading}>
-            {loading ? "Fetching Jobs..." : "Fetch Jobs from Indeed"}
-          </button>
+          {Object.keys(groups).map((source) => (
+            <button
+              key={source}
+              onClick={() => fetchJobsBySource(source)}
+              disabled={!!loading}
+            >
+              {loading === source ? `Fetching ${source}...` : source}
+            </button>
+          ))}
         </div>
+
         <div className="content">
           {loading ? (
-            <p>Loading jobs from all Indeed markets...</p>
+            <p>Loading jobs...</p>
           ) : error ? (
             <p style={{ color: "red" }}>{error}</p>
           ) : jobs.length ? (
             <ul className="job-results">
-              {jobs.map((job, index) => (
-                <li key={index}>
+              {jobs.map((job, idx) => (
+                <li key={idx}>
                   <h2>{job.title}</h2>
-                  <p>
-                    {job.company} - {job.location}
-                  </p>
+                  <p>{job.company} - {job.location}</p>
                   <a
                     href={job.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => handleLinkClick(index)}
+                    onClick={() => handleLinkClick(idx)}
                     style={{ color: job.clicked ? "red" : "blue" }}
                   >
                     View Job
