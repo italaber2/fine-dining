@@ -16,43 +16,50 @@ const App: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [groups, setGroups] = useState<Record<string, string[]>>({});
 
-  // Load backend config and auto-group endpoints by inferred source
+  // Load backend config and group endpoints by source
   useEffect(() => {
     const loadConfig = async () => {
       try {
         const res = await fetch(`${BASE_URL}/api/config`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          setError("Failed to load config");
+          return;
+        }
 
         const data = await res.json();
-
-        // Example path: "/api/jobs/indeed/de-qa"
-        // segments = ["", "api", "jobs", "indeed", "de-qa"]
         const grouped = data.reduce((acc: any, item: any) => {
           const segments = item.path.split("/");
-          const source = segments[3]; // "indeed", "apify", "startupJobs", etc.
-
+          const source = segments[3] || "unknown";
           if (!acc[source]) acc[source] = [];
           acc[source].push(item.path);
-
           return acc;
         }, {});
-
         setGroups(grouped);
       } catch (err) {
         console.error("Failed to load config:", err);
+        setError("Failed to load config");
       }
     };
 
     loadConfig();
   }, []);
 
-  // Fetch jobs for a specific source (load only that group's endpoints)
   const fetchJobsBySource = async (source: string) => {
-    const endpoints = groups[source];
-    if (!endpoints) return;
+    let endpoints: string[] = [];
+
+    if (source === "all") {
+      endpoints = Object.values(groups).flat();
+    } else {
+      endpoints = groups[source] || [];
+    }
+
+    if (!endpoints.length) {
+      setError("No endpoints found to fetch jobs.");
+      setJobs([]);
+      return;
+    }
 
     setLoading(source);
     setError(null);
@@ -64,18 +71,14 @@ const App: React.FC = () => {
         const res = await fetch(`${BASE_URL}${endpoint}`, {
           headers: { "ngrok-skip-browser-warning": "69420" },
         });
-
         if (!res.ok) continue;
 
         const data = await res.json();
-
         if (Array.isArray(data)) {
-          collected.push(
-            ...data.map((j: Job) => ({ ...j, clicked: false }))
-          );
+          collected.push(...data.map((j: Job) => ({ ...j, clicked: false })));
         }
-      } catch (error) {
-        console.error(`Error fetching ${endpoint}:`, error);
+      } catch (err) {
+        console.error(`Error fetching ${endpoint}:`, err);
       }
     }
 
@@ -83,9 +86,9 @@ const App: React.FC = () => {
     setLoading(null);
   };
 
-  const handleLinkClick = (i: number) => {
+  const handleLinkClick = (index: number) => {
     const updated = [...jobs];
-    updated[i].clicked = true;
+    updated[index].clicked = true;
     setJobs(updated);
   };
 
@@ -98,15 +101,32 @@ const App: React.FC = () => {
 
       <div className="container">
         <div className="sidebar">
-          {Object.keys(groups).map((source) => (
-            <button
-              key={source}
-              onClick={() => fetchJobsBySource(source)}
-              disabled={!!loading}
-            >
-              {loading === source ? `Fetching ${source}...` : source}
-            </button>
-          ))}
+          {/* Always render generic fetch */}
+          <button
+            onClick={() => fetchJobsBySource("all")}
+            disabled={!!loading}
+          >
+            {loading === "all" ? "Fetching jobs..." : "Fetch Jobs"}
+          </button>
+
+          {/* Render per-source buttons */}
+          {Object.keys(groups).length > 0 &&
+            Object.keys(groups).map((source) => (
+              <button
+                key={source}
+                onClick={() => fetchJobsBySource(source)}
+                disabled={!!loading}
+              >
+                {loading === source ? `Fetching ${source}...` : source}
+              </button>
+            ))}
+
+          {/* Show message if no sources loaded */}
+          {Object.keys(groups).length === 0 && (
+            <p style={{ fontSize: "0.9em", color: "#555" }}>
+              No sources loaded. Using generic fetch.
+            </p>
+          )}
         </div>
 
         <div className="content">
@@ -119,7 +139,9 @@ const App: React.FC = () => {
               {jobs.map((job, idx) => (
                 <li key={idx}>
                   <h2>{job.title}</h2>
-                  <p>{job.company} - {job.location}</p>
+                  <p>
+                    {job.company} {job.location && `- ${job.location}`}
+                  </p>
                   <a
                     href={job.link}
                     target="_blank"
